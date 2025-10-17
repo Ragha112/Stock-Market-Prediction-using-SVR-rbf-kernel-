@@ -7,744 +7,16 @@ Original file is located at
     https://colab.research.google.com/drive/1MohCQjlZ11fD3yCn6Jiu0zKxliFNeI_V
 """
 
-# Step 1: Install Required Libraries
-!pip install yfinance scikit-learn matplotlib pandas numpy
-
-# Step 2: Import Libraries
-import numpy as np
-import pandas as pd
-import yfinance as yf
-import matplotlib.pyplot as plt
-from sklearn.svm import SVR
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-
-# Step 3: Load Stock Market Data (Using Yahoo Finance)
-ticker = "AAPL"  # You can change this to any stock symbol (e.g., TSLA, MSFT)
-df = yf.download(ticker, start="2020-01-01", end="2024-01-01")
-
-# Step 4: Prepare Data for Training
-df["Date"] = df.index
-df = df[["Date", "Open", "High", "Low", "Close", "Volume"]]
-df.reset_index(drop=True, inplace=True)
-
-# Features (X) = Open, High, Low, Volume
-# Target (y) = Close Price
-X = df[["Open", "High", "Low", "Volume"]].values
-y = df["Close"].values
-
-# Step 5: Split Data into Training & Testing Sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Step 6: Standardize Features
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-# Step 7: Train an RBF-SVM Model
-svm_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.01)
-svm_rbf.fit(X_train_scaled, y_train)
-
-# Step 8: Make Predictions
-y_pred = svm_rbf.predict(X_test_scaled)
-
-# Step 9: Evaluate Model Performance
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
-rmse = np.sqrt(mse)
-
-print(f"Mean Absolute Error (MAE): {mae:.2f}")
-print(f"Mean Squared Error (MSE): {mse:.2f}")
-print(f"Root Mean Squared Error (RMSE): {rmse:.2f}")
-
-# Step 10: Visualize Actual vs Predicted Prices
-plt.figure(figsize=(10,5))
-plt.plot(y_test, label="Actual Prices", color='blue')
-plt.plot(y_pred, label="Predicted Prices", color='red')
-plt.xlabel("Days")
-plt.ylabel("Stock Price")
-plt.title(f"{ticker} Stock Price Prediction using RBF-SVM")
-plt.legend()
-plt.show()
-
-# Step 1: Install Required Libraries
-!pip install yfinance scikit-learn matplotlib pandas numpy
-
-# Step 2: Import Libraries
-import numpy as np
-import pandas as pd
-import yfinance as yf
-import matplotlib.pyplot as plt
-from sklearn.svm import SVR
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-
-# Step 3: Select Two Stocks for Comparison
-stock1 = "AAPL"  # Apple
-stock2 = "MSFT"  # Microsoft
-
-# Step 4: Function to Fetch and Prepare Data
-def get_stock_data(ticker):
-    df = yf.download(ticker, start="2020-01-01", end="2024-01-01")
-    df["Date"] = df.index
-    df = df[["Date", "Open", "High", "Low", "Close", "Volume"]]
-    df.reset_index(drop=True, inplace=True)
-
-    # Features: Open, High, Low, Volume | Target: Close Price
-    X = df[["Open", "High", "Low", "Volume"]].values
-    y = df["Close"].values
-
-    return X, y, df
-
-# Step 5: Get Data for Both Stocks
-X1, y1, df1 = get_stock_data(stock1)
-X2, y2, df2 = get_stock_data(stock2)
-
-# Step 6: Split Data into Training & Testing Sets
-X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.2, random_state=42)
-X2_train, X2_test, y2_train, y2_test = train_test_split(X2, y2, test_size=0.2, random_state=42)
-
-# Step 7: Standardize Features
-scaler1 = StandardScaler()
-X1_train_scaled = scaler1.fit_transform(X1_train)
-X1_test_scaled = scaler1.transform(X1_test)
-
-scaler2 = StandardScaler()
-X2_train_scaled = scaler2.fit_transform(X2_train)
-X2_test_scaled = scaler2.transform(X2_test)
-
-# Step 8: Train RBF-SVM Models for Both Stocks
-svm1 = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.01)
-svm2 = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.01)
-
-svm1.fit(X1_train_scaled, y1_train)
-svm2.fit(X2_train_scaled, y2_train)
-
-# Step 9: Make Predictions
-y1_pred = svm1.predict(X1_test_scaled)
-y2_pred = svm2.predict(X2_test_scaled)
-
-# Step 10: Evaluate Model Performance
-mae1 = mean_absolute_error(y1_test, y1_pred)
-mse1 = mean_squared_error(y1_test, y1_pred)
-rmse1 = np.sqrt(mse1)
-
-mae2 = mean_absolute_error(y2_test, y2_pred)
-mse2 = mean_squared_error(y2_test, y2_pred)
-rmse2 = np.sqrt(mse2)
-
-print(f"Performance Metrics for {stock1}:")
-print(f"  MAE: {mae1:.2f}")
-print(f"  MSE: {mse1:.2f}")
-print(f"  RMSE: {rmse1:.2f}")
-
-print(f"\nPerformance Metrics for {stock2}:")
-print(f"  MAE: {mae2:.2f}")
-print(f"  MSE: {mse2:.2f}")
-print(f"  RMSE: {rmse2:.2f}")
-
-# Step 11: Visualize Actual vs Predicted Prices
-plt.figure(figsize=(12,5))
-plt.plot(y1_test, label=f"Actual {stock1}", color='blue')
-plt.plot(y1_pred, label=f"Predicted {stock1}", color='red', linestyle="dashed")
-plt.plot(y2_test, label=f"Actual {stock2}", color='green')
-plt.plot(y2_pred, label=f"Predicted {stock2}", color='orange', linestyle="dashed")
-plt.xlabel("Days")
-plt.ylabel("Stock Price")
-plt.title(f"Stock Price Prediction Comparison: {stock1} vs {stock2}")
-plt.legend()
-plt.show()
-
-# Step 12: Recommend the Better Stock
-future_growth1 = y1_pred[-1] - y1_test[-1]  # Predicted last day's change
-future_growth2 = y2_pred[-1] - y2_test[-1]
-
-print("\nStock Recommendation:")
-if future_growth1 > future_growth2:
-    print(f"  🔹 {stock1} is expected to perform better based on predictions.")
-else:
-    print(f"  🔹 {stock2} is expected to perform better based on predictions.")
-
-# Install libraries
-!pip install yfinance --quiet
-
-# Import necessary libraries
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, r2_score
-
-# Function to fetch and preprocess stock data
-def fetch_stock_data(ticker):
-    df = yf.download(ticker, period="2y")  # 2-year historical data
-    df['Prediction'] = df['Close'].shift(-1)
-    df.dropna(inplace=True)
-    return df
-
-# Function to build, train, and predict using RBF-SVM
-def predict_stock_price(df):
-    X = df[['Open', 'High', 'Low', 'Close', 'Volume']]
-    y = df['Prediction']
-
-    # Split dataset
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
-
-    # Scale features
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    # Train SVM with RBF kernel
-    svm_model = SVR(kernel='rbf', C=100, gamma=0.01)
-    svm_model.fit(X_train_scaled, y_train)
-
-    # Predict next day's price
-    latest_features = scaler.transform(X.tail(1))
-    predicted_price = svm_model.predict(latest_features)[0]
-
-    # Evaluate model
-    predictions = svm_model.predict(X_test_scaled)
-    mse = mean_squared_error(y_test, predictions)
-    r2 = r2_score(y_test, predictions)
-
-    return predicted_price, mse, r2, predictions, y_test
-
-# Stocks to compare
-stock1 = 'AAPL'  # Apple
-stock2 = 'MSFT'  # Microsoft
-
-# Fetch and process data
-data1 = fetch_stock_data(stock1)
-data2 = fetch_stock_data(stock2)
-
-# Predict stock prices
-predicted_price1, mse1, r21, pred1, y_test1 = predict_stock_price(data1)
-predicted_price2, mse2, r22, pred2, y_test2 = predict_stock_price(data2)
-
-# Display predictions and evaluation metrics
-print(f"\n{stock1} Predicted Next-Day Price: ${predicted_price1:.2f}")
-print(f"{stock1} Model - MSE: {mse1:.4f}, R^2 Score: {r21:.4f}")
-
-print(f"\n{stock2} Predicted Next-Day Price: ${predicted_price2:.2f}")
-print(f"{stock2} Model - MSE: {mse2:.4f}, R^2 Score: {r22:.4f}")
-
-# Visualization: Actual vs Predicted Prices
-plt.figure(figsize=(14,6))
-
-# Stock 1 Plot
-plt.subplot(1,2,1)
-plt.plot(y_test1.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred1[-60:], label='Predicted Price', color='orange')
-plt.title(f'{stock1} Actual vs Predicted (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-# Stock 2 Plot
-plt.subplot(1,2,2)
-plt.plot(y_test2.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred2[-60:], label='Predicted Price', color='orange')
-plt.title(f'{stock2} Actual vs Predicted (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-plt.tight_layout()
-plt.show()
-
-# Recommendations based on predicted growth (fully corrected indexing)
-latest_close1 = data1['Close'].iloc[-1].item()
-latest_close2 = data2['Close'].iloc[-1].item()
-
-growth1 = ((predicted_price1 - latest_close1) / latest_close1) * 100
-growth2 = ((predicted_price2 - latest_close2) / latest_close2) * 100
-
-print(f"{stock1} Expected Next-Day Growth: {growth1:.2f}%")
-print(f"{stock2} Expected Next-Day Growth: {growth2:.2f}%")
-
-# Final Recommendation
-if growth1 > growth2 and growth1 > 0:
-    print(f"\nRecommendation: {stock1} is expected to grow more than {stock2}. Consider investing in {stock1}.")
-elif growth2 > growth1 and growth2 > 0:
-    print(f"\nRecommendation: {stock2} is expected to grow more than {stock1}. Consider investing in {stock2}.")
-elif growth1 < 0 and growth2 < 0:
-    print("\nRecommendation: Both stocks are expected to decline. Be cautious.")
-else:
-    print("\nRecommendation: Performance is similar or flat. Further analysis recommended.")
-
-# Install libraries
-!pip install yfinance --quiet
-
-# Import libraries
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, r2_score
-
-# Fetch stock data and calculate EMA
-def fetch_stock_data(ticker):
-    df = yf.download(ticker, period="2y")
-
-    # Exponential Moving Average (EMA14)
-    df['EMA14'] = df['Close'].ewm(span=14, adjust=False).mean()
-
-    # Drop NaNs created by EMA
-    df.dropna(inplace=True)
-
-    # Shift to create prediction target
-    df['Prediction'] = df['Close'].shift(-1)
-    df.dropna(inplace=True)
-
-    return df
-
-# Function to train and predict using SVM-RBF
-def predict_stock_price(df):
-    X = df[['Open', 'High', 'Low', 'Close', 'Volume', 'EMA14']]
-    y = df['Prediction']
-
-    # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
-
-    # Feature scaling
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    # Train RBF-SVM model
-    model = SVR(kernel='rbf', C=100, gamma=0.01)
-    model.fit(X_train_scaled, y_train)
-
-    # Predict next day's price
-    latest_features = scaler.transform(X.tail(1))
-    predicted_price = model.predict(latest_features)[0]
-
-    # Predictions on test set
-    predictions = model.predict(X_test_scaled)
-    mse = mean_squared_error(y_test, predictions)
-    r2 = r2_score(y_test, predictions)
-
-    return predicted_price, mse, r2, predictions, y_test
-
-# Define stocks
-stock1 = 'AAPL'
-stock2 = 'MSFT'
-
-# Fetch data
-data1 = fetch_stock_data(stock1)
-data2 = fetch_stock_data(stock2)
-
-# Predictions
-predicted_price1, mse1, r21, pred1, y_test1 = predict_stock_price(data1)
-predicted_price2, mse2, r22, pred2, y_test2 = predict_stock_price(data2)
-
-# Print results
-print(f"\n{stock1} Predicted Next-Day Price: ${predicted_price1:.2f}")
-print(f"{stock1} MSE: {mse1:.4f}, R²: {r21:.4f}")
-
-print(f"\n{stock2} Predicted Next-Day Price: ${predicted_price2:.2f}")
-print(f"{stock2} MSE: {mse2:.4f}, R²: {r22:.4f}")
-
-# Visualization (Actual vs Predicted)
-plt.figure(figsize=(14,6))
-
-# Stock 1 Plot
-plt.subplot(1,2,1)
-plt.plot(y_test1.values[-60:], label='Actual', color='blue')
-plt.plot(pred1[-60:], label='Predicted', color='orange')
-plt.title(f'{stock1} Actual vs Predicted (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-# Stock 2 Plot
-plt.subplot(1,2,2)
-plt.plot(y_test2.values[-60:], label='Actual', color='blue')
-plt.plot(pred2[-60:], label='Predicted', color='orange')
-plt.title(f'{stock2} Actual vs Predicted (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-plt.tight_layout()
-plt.show()
-
-# Recommendations (fixed scalar extraction)
-latest_close1 = data1['Close'].iloc[-1].item()
-latest_close2 = data2['Close'].iloc[-1].item()
-
-growth1 = ((predicted_price1 - latest_close1) / latest_close1) * 100
-growth2 = ((predicted_price2 - latest_close2) / latest_close2) * 100
-
-print(f"{stock1} Expected Growth: {growth1:.2f}%")
-print(f"{stock2} Expected Growth: {growth2:.2f}%")
-
-# Final Recommendation
-if growth1 > growth2 and growth1 > 0:
-    print(f"\nRecommendation: {stock1} has better growth potential. Consider investing in {stock1}.")
-elif growth2 > growth1 and growth2 > 0:
-    print(f"\nRecommendation: {stock2} has better growth potential. Consider investing in {stock2}.")
-elif growth1 < 0 and growth2 < 0:
-    print("\nRecommendation: Both stocks expected to decline. Caution advised.")
-else:
-    print("\nRecommendation: Neutral predictions. Consider further analysis.")
-
-# Import classification metrics
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
-# Function to classify predictions as direction (1: up, 0: down)
-def classify_direction(actual, predicted):
-    actual_direction = np.where(np.diff(actual) > 0, 1, 0)
-    predicted_direction = np.where(np.diff(predicted) > 0, 1, 0)
-    return actual_direction, predicted_direction
-
-# Stock 1 classification evaluation
-actual_dir1, pred_dir1 = classify_direction(y_test1.values, pred1)
-accuracy1 = accuracy_score(actual_dir1, pred_dir1)
-precision1 = precision_score(actual_dir1, pred_dir1)
-recall1 = recall_score(actual_dir1, pred_dir1)
-f1_score1 = f1_score(actual_dir1, pred_dir1)
-std_dev1 = np.std(y_test1.values - pred1)
-
-# Stock 2 classification evaluation
-actual_dir2, pred_dir2 = classify_direction(y_test2.values, pred2)
-accuracy2 = accuracy_score(actual_dir2, pred_dir2)
-precision2 = precision_score(actual_dir2, pred_dir2)
-recall2 = recall_score(actual_dir2, pred_dir2)
-f1_score2 = f1_score(actual_dir2, pred_dir2)
-std_dev2 = np.std(y_test2.values - pred2)
-
-# Display metrics for Stock 1
-print(f"\nClassification Metrics & Error Analysis for {stock1}:")
-print(f"Accuracy: {accuracy1:.2f}")
-print(f"Precision: {precision1:.2f}")
-print(f"Recall: {recall1:.2f}")
-print(f"F1 Score: {f1_score1:.2f}")
-print(f"Standard Deviation of Prediction Error: {std_dev1:.4f}")
-
-# Display metrics for Stock 2
-print(f"\nClassification Metrics & Error Analysis for {stock2}:")
-print(f"Accuracy: {accuracy2:.2f}")
-print(f"Precision: {precision2:.2f}")
-print(f"Recall: {recall2:.2f}")
-print(f"F1 Score: {f1_score2:.2f}")
-print(f"Standard Deviation of Prediction Error: {std_dev2:.4f}")
-
-# Install libraries
-!pip install yfinance --quiet
-
-# Import libraries
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, r2_score
-
-# Fetch stock data and calculate EMA
-def fetch_stock_data(ticker):
-    df = yf.download(ticker, period="2y")
-
-    # Exponential Moving Average (EMA14)
-    df['EMA14'] = df['Close'].ewm(span=14, adjust=False).mean()
-
-    # Drop NaNs created by EMA
-    df.dropna(inplace=True)
-
-    # Prediction column (next day's close)
-    df['Prediction'] = df['Close'].shift(-1)
-    df.dropna(inplace=True)
-
-    return df
-
-# Function to train and predict with SVM-RBF
-def predict_stock_price(df):
-    X = df[['Open', 'High', 'Low', 'Close', 'Volume', 'EMA14']]
-    y = df['Prediction']
-
-    # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
-
-    # Feature scaling
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    # Train RBF-SVM model
-    model = SVR(kernel='rbf', C=100, gamma=0.01)
-    model.fit(X_train_scaled, y_train)
-
-    # Predict next day's price
-    latest_features = scaler.transform(X.tail(1))
-    predicted_price = model.predict(latest_features)[0]
-
-    # Predictions on test set
-    predictions = model.predict(X_test_scaled)
-    mse = mean_squared_error(y_test, predictions)
-    r2 = r2_score(y_test, predictions)
-
-    return predicted_price, mse, r2, predictions, y_test, df
-
-# Define stocks
-stock1 = 'AAPL'
-stock2 = 'MSFT'
-
-# Fetch data
-data1 = fetch_stock_data(stock1)
-data2 = fetch_stock_data(stock2)
-
-# Predictions
-predicted_price1, mse1, r21, pred1, y_test1, full_df1 = predict_stock_price(data1)
-predicted_price2, mse2, r22, pred2, y_test2, full_df2 = predict_stock_price(data2)
-
-# Results
-print(f"\n{stock1} Predicted Next-Day Price: ${predicted_price1:.2f}")
-print(f"{stock1} MSE: {mse1:.4f}, R²: {r21:.4f}")
-
-print(f"\n{stock2} Predicted Next-Day Price: ${predicted_price2:.2f}")
-print(f"{stock2} MSE: {mse2:.4f}, R²: {r22:.4f}")
-
-# Visualization (Actual, Predicted, EMA)
-plt.figure(figsize=(15,10))
-
-# Stock 1 Plot
-plt.subplot(2,1,1)
-plt.plot(y_test1.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred1[-60:], label='Predicted Price', color='orange')
-plt.plot(full_df1['EMA14'].iloc[-60:].values, label='EMA14', color='green', linestyle='--')
-plt.title(f'{stock1} Actual vs Predicted vs EMA14 (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-# Stock 2 Plot
-plt.subplot(2,1,2)
-plt.plot(y_test2.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred2[-60:], label='Predicted Price', color='orange')
-plt.plot(full_df2['EMA14'].iloc[-60:].values, label='EMA14', color='green', linestyle='--')
-plt.title(f'{stock2} Actual vs Predicted vs EMA14 (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-plt.tight_layout()
-plt.show()
-
-# Recommendations (correct scalar extraction)
-latest_close1 = data1['Close'].iloc[-1].item()
-latest_close2 = data2['Close'].iloc[-1].item()
-
-growth1 = ((predicted_price1 - latest_close1) / latest_close1) * 100
-growth2 = ((predicted_price2 - latest_close2) / latest_close2) * 100
-
-print(f"{stock1} Expected Growth: {growth1:.2f}%")
-print(f"{stock2} Expected Growth: {growth2:.2f}%")
-
-# Final Recommendation
-if growth1 > growth2 and growth1 > 0:
-    print(f"\nRecommendation: {stock1} has better growth potential. Consider investing in {stock1}.")
-elif growth2 > growth1 and growth2 > 0:
-    print(f"\nRecommendation: {stock2} has better growth potential. Consider investing in {stock2}.")
-elif growth1 < 0 and growth2 < 0:
-    print("\nRecommendation: Both stocks expected to decline. Caution advised.")
-else:
-    print("\nRecommendation: Neutral predictions. Consider further analysis.")
-
-"""ML PROJECT FINAL
-
-"""
-
-!pip install yfinance --quiet
-
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, r2_score
-
-# Function to fetch stock data and calculate EMA
-def fetch_stock_data(ticker):
-    df = yf.download(ticker, period="2y")
-
-    # Exponential Moving Average (EMA14)
-    df['EMA14'] = df['Close'].ewm(span=14, adjust=False).mean()
-
-    # Drop NaN values caused by EMA calculation
-    df.dropna(inplace=True)
-
-    # Prediction column (next day's close)
-    df['Prediction'] = df['Close'].shift(-1)
-    df.dropna(inplace=True)
-
-    return df
-
-# Define stocks
-stock1 = 'AAPL'
-stock2 = 'MSFT'
-
-# Fetch datasets
-data1 = fetch_stock_data(stock1)
-data2 = fetch_stock_data(stock2)
-
-# Display first 5 samples of datasets
-print(f"{stock1} Dataset Sample:")
-print(data1.head(), "\n")
-
-print(f"{stock2} Dataset Sample:")
-print(data2.head())
-
-# Function to train and predict stock prices using SVM-RBF
-def predict_stock_price(df):
-    X = df[['Open', 'High', 'Low', 'Close', 'Volume', 'EMA14']]
-    y = df['Prediction']
-
-    # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
-
-    # Feature scaling
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    # Train RBF-SVM model
-    model = SVR(kernel='rbf', C=1000, gamma=0.01)
-    model.fit(X_train_scaled, y_train)
-
-    # Predict next day's price
-    latest_features = scaler.transform(X.tail(1))
-    predicted_price = model.predict(latest_features)[0]
-
-    # Predictions on test set
-    predictions = model.predict(X_test_scaled)
-    mse = mean_squared_error(y_test, predictions)
-    r2 = r2_score(y_test, predictions)
-
-    return predicted_price, mse, r2, predictions, y_test, df
-
-# Stock predictions
-predicted_price1, mse1, r21, pred1, y_test1, full_df1 = predict_stock_price(data1)
-predicted_price2, mse2, r22, pred2, y_test2, full_df2 = predict_stock_price(data2)
-
-# Display prediction results
-print(f"\n{stock1} Predicted Next-Day Price: ${predicted_price1:.2f}")
-print(f"{stock1} MSE: {mse1:.4f}, R²: {r21:.4f}")
-
-print(f"\n{stock2} Predicted Next-Day Price: ${predicted_price2:.2f}")
-print(f"{stock2} MSE: {mse2:.4f}, R²: {r22:.4f}")
-
-plt.figure(figsize=(15,10))
-
-# Stock 1 Visualization
-plt.subplot(2,1,1)
-plt.plot(y_test1.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred1[-60:], label='Predicted Price', color='orange')
-plt.plot(full_df1['EMA14'].iloc[-60:].values, label='EMA14', color='green', linestyle='--')
-plt.title(f'{stock1} Actual vs Predicted vs EMA14 (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-# Stock 2 Visualization
-plt.subplot(2,1,2)
-plt.plot(y_test2.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred2[-60:], label='Predicted Price', color='orange')
-plt.plot(full_df2['EMA14'].iloc[-60:].values, label='EMA14', color='green', linestyle='--')
-plt.title(f'{stock2} Actual vs Predicted vs EMA14 (Last 60 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-plt.tight_layout()
-plt.show()
-
-# Extract latest closing prices
-latest_close1 = data1['Close'].iloc[-1].item()
-latest_close2 = data2['Close'].iloc[-1].item()
-
-# Calculate growth
-growth1 = ((predicted_price1 - latest_close1) / latest_close1) * 100
-growth2 = ((predicted_price2 - latest_close2) / latest_close2) * 100
-
-# Display growth
-print(f"{stock1} Expected Growth: {growth1:.2f}%")
-print(f"{stock2} Expected Growth: {growth2:.2f}%")
-
-# Investment recommendation
-if growth1 > growth2 and growth1 > 0:
-    print(f"\nRecommendation: {stock1} has better growth potential. Consider investing in {stock1}.")
-elif growth2 > growth1 and growth2 > 0:
-    print(f"\nRecommendation: {stock2} has better growth potential. Consider investing in {stock2}.")
-elif growth1 < 0 and growth2 < 0:
-    print("\nRecommendation: Both stocks expected to decline. Caution advised.")
-else:
-    print("\nRecommendation: Neutral predictions. Consider further analysis.")
-
-# Import classification metrics
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
-# Function to classify predictions as direction (1: up, 0: down)
-def classify_direction(actual, predicted):
-    actual_direction = np.where(np.diff(actual) > 0, 1, 0)
-    predicted_direction = np.where(np.diff(predicted) > 0, 1, 0)
-    return actual_direction, predicted_direction
-
-# Stock 1 classification evaluation
-actual_dir1, pred_dir1 = classify_direction(y_test1.values, pred1)
-accuracy1 = accuracy_score(actual_dir1, pred_dir1)
-precision1 = precision_score(actual_dir1, pred_dir1)
-recall1 = recall_score(actual_dir1, pred_dir1)
-f1_score1 = f1_score(actual_dir1, pred_dir1)
-std_dev1 = np.std(y_test1.values - pred1)
-
-# Stock 2 classification evaluation
-actual_dir2, pred_dir2 = classify_direction(y_test2.values, pred2)
-accuracy2 = accuracy_score(actual_dir2, pred_dir2)
-precision2 = precision_score(actual_dir2, pred_dir2)
-recall2 = recall_score(actual_dir2, pred_dir2)
-f1_score2 = f1_score(actual_dir2, pred_dir2)
-std_dev2 = np.std(y_test2.values - pred2)
-
-# Display metrics for Stock 1
-print(f"\nClassification Metrics & Error Analysis for {stock1}:")
-print(f"Accuracy: {accuracy1:.2f}")
-print(f"Precision: {precision1:.2f}")
-print(f"Recall: {recall1:.2f}")
-print(f"F1 Score: {f1_score1:.2f}")
-print(f"Standard Deviation of Prediction Error: {std_dev1:.4f}")
-
-# Display metrics for Stock 2
-print(f"\nClassification Metrics & Error Analysis for {stock2}:")
-print(f"Accuracy: {accuracy2:.2f}")
-print(f"Precision: {precision2:.2f}")
-print(f"Recall: {recall2:.2f}")
-print(f"F1 Score: {f1_score2:.2f}")
-print(f"Standard Deviation of Prediction Error: {std_dev2:.4f}")
-
-# Install and import
-!pip install yfinance --quiet
-
+# 🧠 Stock Market Prediction using Support Vector Regression (SVR)
+# ---------------------------------------------------------------
+# Predicts next-day stock prices for Apple (AAPL) and Microsoft (MSFT)
+# Uses 5-year data from yFinance, EMA-14, GridSearchCV tuning, and evaluates with MSE & R²
+# Finally recommends the better-performing stock based on predicted growth.
+
+# Step 1: Install dependencies
+!pip install yfinance scikit-learn matplotlib pandas numpy --quiet
+
+# Step 2: Import required libraries
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -752,20 +24,26 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score
 
-# Fetch stock data with EMA
+# Step 3: Fetch stock data and compute EMA-14
 def fetch_stock_data(ticker):
     df = yf.download(ticker, period="5y")
-
-    # EMA14 calculation
     df['EMA14'] = df['Close'].ewm(span=14, adjust=False).mean()
     df['Prediction'] = df['Close'].shift(-1)
-
     df.dropna(inplace=True)
     return df
 
-# Grid Search for best SVR model
+stock1, stock2 = 'AAPL', 'MSFT'
+data1 = fetch_stock_data(stock1)
+data2 = fetch_stock_data(stock2)
+
+print(f"\n{stock1} Dataset Sample:")
+display(data1.head())
+print(f"\n{stock2} Dataset Sample:")
+display(data2.head())
+
+# Step 4: Find best SVR parameters using GridSearchCV
 def find_best_params(X_train_scaled, y_train):
     param_grid = {
         'C': [0.1, 1, 10, 100],
@@ -774,60 +52,43 @@ def find_best_params(X_train_scaled, y_train):
     svr = SVR(kernel='rbf')
     grid = GridSearchCV(svr, param_grid, scoring='neg_mean_squared_error', cv=5)
     grid.fit(X_train_scaled, y_train)
-
     print("🔍 Best Parameters:", grid.best_params_)
     return grid.best_estimator_
 
-# SVR Prediction
+# Step 5: Train, predict, and evaluate SVR
 def predict_stock_price(df):
     X = df[['Open', 'High', 'Low', 'Close', 'Volume', 'EMA14']]
     y = df['Prediction']
-
-    # 70-30 split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=False)
 
-    # Feature scaling
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Get best SVR model
     model = find_best_params(X_train_scaled, y_train)
 
-    # Predict next day's price
     latest_features = scaler.transform(X.tail(1))
     predicted_price = model.predict(latest_features)[0]
 
-    # Predict on test set
     predictions = model.predict(X_test_scaled)
     mse = mean_squared_error(y_test, predictions)
     r2 = r2_score(y_test, predictions)
 
     return predicted_price, mse, r2, predictions, y_test, df
 
-# Choose stocks
-stock1 = 'AAPL'
-stock2 = 'MSFT'
-
-# Get data
-data1 = fetch_stock_data(stock1)
-data2 = fetch_stock_data(stock2)
-
-# Predict and evaluate
+# Step 6: Run predictions for both stocks
 pred_price1, mse1, r21, pred1, y_test1, full_df1 = predict_stock_price(data1)
 pred_price2, mse2, r22, pred2, y_test2, full_df2 = predict_stock_price(data2)
 
-# Print metrics
-print(f"\n {stock1} Predicted Next-Day Price: ${pred_price1:.2f}")
-print(f"{stock1} MSE: {mse1:.4f}, R²: {r21:.4f}")
+print(f"\n{stock1} Predicted Next-Day Price: ${pred_price1:.2f}")
+print(f"{stock1} → MSE: {mse1:.4f}, R²: {r21:.4f}")
+print(f"\n{stock2} Predicted Next-Day Price: ${pred_price2:.2f}")
+print(f"{stock2} → MSE: {mse2:.4f}, R²: {r22:.4f}")
 
-print(f"\n {stock2} Predicted Next-Day Price: ${pred_price2:.2f}")
-print(f"{stock2} MSE: {mse2:.4f}, R²: {r22:.4f}")
-
-# Plot Actual vs Predicted
+# Step 7: Visualization (Actual vs Predicted vs EMA)
 plt.figure(figsize=(15,10))
 
-# AAPL plot
+# AAPL
 plt.subplot(2,1,1)
 plt.plot(y_test1.values[-60:], label='Actual Price', color='blue')
 plt.plot(pred1[-60:], label='Predicted Price', color='orange')
@@ -838,7 +99,7 @@ plt.ylabel('Price (USD)')
 plt.legend()
 plt.grid()
 
-# MSFT plot
+# MSFT
 plt.subplot(2,1,2)
 plt.plot(y_test2.values[-60:], label='Actual Price', color='blue')
 plt.plot(pred2[-60:], label='Predicted Price', color='orange')
@@ -852,141 +113,51 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 
-# Growth & Recommendation
-latest_close1 = data1['Close'].iloc[-1]
-latest_close2 = data2['Close'].iloc[-1]
-
-growth1 = ((pred_price1 - latest_close1) / latest_close1) * 100
-growth2 = ((pred_price2 - latest_close2) / latest_close2) * 100
-
-print(f"\n {stock1} Expected Growth: {growth1:.2f}%")
-print(f" {stock2} Expected Growth: {growth2:.2f}%")
-
-if growth1 > growth2 and growth1 > 0:
-    print(f"\n Recommendation: Invest in {stock1}")
-elif growth2 > growth1 and growth2 > 0:
-    print(f"\n Recommendation: Invest in {stock2}")
-elif growth1 < 0 and growth2 < 0:
-    print("\n Both stocks expected to decline. Exercise caution.")
-else:
-    print("\n Neutral outlook. Consider further analysis.")
-
-# Install yfinance
-!pip install yfinance --quiet
-
-# Import Libraries
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, r2_score
-
-# Fetch data with EMA and prediction shift
-def fetch_stock_data(ticker):
-    df = yf.download(ticker, period="5y")
-    df['EMA14'] = df['Close'].ewm(span=14, adjust=False).mean()
-    df['Prediction'] = df['Close'].shift(-1)
-    df.dropna(inplace=True)
-    return df
-
-# Grid Search for best hyperparameters
-def find_best_params(X_train_scaled, y_train):
-    param_grid = {
-        'C': [0.1, 1, 10, 100],
-        'gamma': [0.0001, 0.001, 0.01, 0.1]
-    }
-    svr = SVR(kernel='rbf')
-    grid = GridSearchCV(svr, param_grid, scoring='neg_mean_squared_error', cv=5)
-    grid.fit(X_train_scaled, y_train)
-    print(" Best Parameters:", grid.best_params_)
-    return grid.best_estimator_
-
-# Train, predict, and evaluate
-def predict_stock_price(df):
-    X = df[['Open', 'High', 'Low', 'Close', 'Volume', 'EMA14']]
-    y = df['Prediction']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=False)
-
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    model = find_best_params(X_train_scaled, y_train)
-
-    # Prediction
-    latest_features = scaler.transform(X.tail(1))
-    predicted_price = model.predict(latest_features)[0]
-    predictions = model.predict(X_test_scaled)
-
-    # Metrics
-    mse = mean_squared_error(y_test, predictions)
-    r2 = r2_score(y_test, predictions)
-
-    return predicted_price, mse, r2, predictions, y_test, df
-
-# Stocks to compare
-stock1 = 'AAPL'
-stock2 = 'MSFT'
-
-# Fetch and predict
-data1 = fetch_stock_data(stock1)
-data2 = fetch_stock_data(stock2)
-
-pred_price1, mse1, r21, pred1, y_test1, full_df1 = predict_stock_price(data1)
-pred_price2, mse2, r22, pred2, y_test2, full_df2 = predict_stock_price(data2)
-
-# Print results
-print(f"\n {stock1} Predicted Next-Day Price: ${pred_price1:.2f}")
-print(f"{stock1} MSE: {mse1:.4f}, R²: {r21:.4f}")
-
-print(f"\n{stock2} Predicted Next-Day Price: ${pred_price2:.2f}")
-print(f"{stock2} MSE: {mse2:.4f}, R²: {r22:.4f}")
-
-# Plotting
-plt.figure(figsize=(15,10))
-
-plt.subplot(2,1,1)
-plt.plot(y_test1.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred1[-60:], label='Predicted Price', color='orange')
-plt.plot(full_df1['EMA14'].iloc[-60:].values, label='EMA14', color='green', linestyle='--')
-plt.title(f'{stock1} Actual vs Predicted vs EMA14 (Last  Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-plt.subplot(2,1,2)
-plt.plot(y_test2.values[-60:], label='Actual Price', color='blue')
-plt.plot(pred2[-60:], label='Predicted Price', color='orange')
-plt.plot(full_df2['EMA14'].iloc[-60:].values, label='EMA14', color='green', linestyle='--')
-plt.title(f'{stock2} Actual vs Predicted vs EMA14 (Last 150 Days)')
-plt.xlabel('Days')
-plt.ylabel('Price (USD)')
-plt.legend()
-plt.grid()
-
-plt.tight_layout()
-plt.show()
-
-# Correct type conversion to float
+# Step 8: Growth calculation and recommendation
 latest_close1 = float(data1['Close'].iloc[-1])
 latest_close2 = float(data2['Close'].iloc[-1])
 
 growth1 = ((pred_price1 - latest_close1) / latest_close1) * 100
 growth2 = ((pred_price2 - latest_close2) / latest_close2) * 100
 
-print(f"\n {stock1} Expected Growth: {growth1:.2f}%")
-print(f" {stock2} Expected Growth: {growth2:.2f}%")
+print(f"\n{stock1} Expected Growth: {growth1:.2f}%")
+print(f"{stock2} Expected Growth: {growth2:.2f}%")
 
-# Final Recommendation
 if growth1 > growth2 and growth1 > 0:
     print(f"\nRecommendation: Invest in {stock1}")
 elif growth2 > growth1 and growth2 > 0:
-    print(f"\n Recommendation: Invest in {stock2}")
+    print(f"\nRecommendation: Invest in {stock2}")
 elif growth1 < 0 and growth2 < 0:
-    print("\n Both stocks expected to decline. Exercise caution.")
+    print("\nBoth stocks expected to decline. Exercise caution.")
 else:
-    print("\n Neutral outlook. Consider further analysis.")
+    print("\nNeutral outlook. Consider further analysis.")
+
+# Step 9: Directional accuracy evaluation
+def classify_direction(actual, predicted):
+    actual_dir = np.where(np.diff(actual) > 0, 1, 0)
+    predicted_dir = np.where(np.diff(predicted) > 0, 1, 0)
+    return actual_dir, predicted_dir
+
+def evaluate_direction(stock, y_test, pred):
+    actual_dir, pred_dir = classify_direction(y_test.values, pred)
+    accuracy = accuracy_score(actual_dir, pred_dir)
+    precision = precision_score(actual_dir, pred_dir)
+    recall = recall_score(actual_dir, pred_dir)
+    f1 = f1_score(actual_dir, pred_dir)
+    std_dev = np.std(y_test.values - pred)
+    print(f"\n📊 Directional Metrics for {stock}:")
+    print(f"Accuracy: {accuracy:.2f}, Precision: {precision:.2f}, Recall: {recall:.2f}, F1: {f1:.2f}")
+    print(f"Std Dev of Prediction Error: {std_dev:.4f}")
+
+evaluate_direction(stock1, y_test1, pred1)
+evaluate_direction(stock2, y_test2, pred2)
+
+# Step 10: Project Summary
+print("""
+📘 Stock Market Prediction using Support Vector Regression (SVR)
+---------------------------------------------------------------
+• Predicts next-day prices for Apple (AAPL) & Microsoft (MSFT)
+• Uses EMA14 and GridSearchCV for tuning
+• Evaluates with MSE, R², and visualizes results
+• Recommends the better-performing stock based on growth
+""")
